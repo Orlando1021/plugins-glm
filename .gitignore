@@ -1,0 +1,7 @@
+output
+output_config
+logs
+*.bin
+datasets
+chatglm6b_v11
+datasets_v2
