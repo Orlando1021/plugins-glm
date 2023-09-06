@@ -2,10 +2,10 @@
 
 ## 📖 Introduction
 为了接入线上插件，微调各种参数量的glm(glm-12b,glm2-6b)
-[**📖飞书文档/Docs**](https://lslfd0slxc.feishu.cn/docxGgZYdKAuWoD6p6xxdVVcoumoncg)
+[**晨晖的飞书文档**](https://lslfd0slxc.feishu.cn/docx/GgZYdKAuWoD6p6xxdVVcoumoncg)
 
 # 😊 数据集
-[**v1数据集/Docs**](https://huggingface.co/datasets/orlando1021/toolglm_v1)
+[**v1数据集**](https://huggingface.co/datasets/orlando1021/toolglm_v1)
 v1数据集包含两个状态：
 1. 请求体生成，包含思考和使用工具两个键值
     思考：思维链过程   
