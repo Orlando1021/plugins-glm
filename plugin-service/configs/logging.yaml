@@ -1,0 +1,27 @@
+version: 1.0
+formatters:
+  default:
+    class: plugin_service.logging.UTCFormatter
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+handlers:
+  file:
+    class: logging.handlers.TimedRotatingFileHandler
+    formatter: default
+    level: DEBUG
+    filename: ./log/chatglm-6b-plugin.log
+    when: midnight
+    backupCount: 3
+    encoding: utf-8
+    utc: True
+  console:
+    class: logging.StreamHandler
+    formatter: default
+    level: DEBUG
+loggers:
+  uvicorn:
+    level: INFO
+    handlers: [file]
+  plugin_service:
+    level: INFO
+    handlers: [file]

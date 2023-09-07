@@ -32,3 +32,5 @@ bash run.sh
 
 # 🔥相关项目
 [**lagent:llm based agents**](https://github.com/InternLM/lagent/blob/main/README_zh-CN.md)
+
+[**Toolbench:pipeline和对api的测试环境**](https://github.com/OpenBMB/ToolBench)
