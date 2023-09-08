@@ -27,8 +27,11 @@ bash run.sh
 已跑通6b，本周内13b跑通
 
 # 💻 todo：
-1. 如何执行生成的请求体
-2. 如何衡量function calling的pass rate
+1. action_executor
+根据晨晖推理代码和lagent重构action_executor
+
+2. 如何衡量sft之后的llm
+根据toolbench搭建api测试环境，评估pass rate
 
 # 🔥相关项目
 [**lagent:llm based agents**](https://github.com/InternLM/lagent/blob/main/README_zh-CN.md)

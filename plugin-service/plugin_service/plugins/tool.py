@@ -4,11 +4,14 @@
 import json
 import random
 from collections.abc import Mapping
-
+import logging
 import requests
 
-from plugin_service.logging import logger
+#from plugin_service.logging import logger
 
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def _compose_tool_usage(name: str, parameters: Mapping) -> str:
     js_obj = {'工具': name, '参数': parameters}

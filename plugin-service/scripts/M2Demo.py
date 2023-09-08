@@ -1,15 +1,23 @@
-mport json, os, sys, re, requests, random
-import os, sys
+# Standard Library Imports
+import json, os, sys, re
 import platform
 import signal
 import argparse
-import gradio as gr
 import random
 from datetime import datetime, timedelta
 import time
+import concurrent.futures
+
+# Third-Party Imports
+import gradio as gr
+import requests
+
+# Local Directory Imports
+sys.path.append('/share/ChatGLM-6B-ft')  
+print(sys.path)
 from chatglm6b_v10.modeling_chatglm import ChatGLMForConditionalGeneration
 from chatglm6b_v10.tokenization_chatglm import ChatGLMTokenizer
-import concurrent.futures
+
 
 chkp_path = './output'
 tags = ['function_v2']

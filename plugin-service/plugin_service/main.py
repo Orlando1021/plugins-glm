@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import os
+import os,sys
 import random
 import time
 import uuid
@@ -9,28 +9,29 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import AsyncIterator, List, Optional, Tuple
-
+import uvicorn
 import torch
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 from transformers import AutoModel, AutoTokenizer
+sys.path.append('..')
 
 from plugin_service import llm
-from plugin_service.logging import logger
 from plugin_service.plugins import PLUGIN_REGISTRY, Tool
 
+
 load_dotenv(verbose=True)
-MODEL_DIR = Path(os.environ['MODEL_DIR']).expanduser().resolve()
-CITY_FILE = Path(os.environ['CITY_FILE']).expanduser().resolve()
+MODEL_DIR = Path('/share/AgentGLM/output/classification_v1_1e-5/checkpoint-417')
 WEEKDAYS = ("星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日")
 TIME_FMT = '%Y-%m-%d %H:%M:%S'
 TOOL_HOME = 'http://localhost:9002'
 TOOL_URLS = {'aminer': TOOL_HOME + '/aminer'}
 model = None
 tokenizer = None
-cities = None
+cities = ['北京']
 plugin_registry = {}
 
 
@@ -73,6 +74,7 @@ def empty_cuda_cache() -> None:
 
 
 def _get_location() -> str:
+    
     return random.choice(cities)
 
 
@@ -84,10 +86,11 @@ def _get_time() -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if not MODEL_DIR.is_dir():
+        print('{}微调模型文件夹为空'.format(MODEL_DIR))
         raise RuntimeError()
     global tokenizer, model, cities
 
-    logger.info("Loading model from '%s'...", MODEL_DIR)
+    print("Loading model from '%s'...", MODEL_DIR)
     tokenizer = AutoTokenizer.from_pretrained(
         str(MODEL_DIR), trust_remote_code=True
     )
@@ -103,13 +106,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     for name, url in TOOL_URLS.items():
         PLUGIN_REGISTRY[name] = Tool(url)
-    logger.info("Loaded %d plugins", len(PLUGIN_REGISTRY))
-
-    cities = []
-    with open(CITY_FILE, 'rt', encoding='utf-8') as f:
-        for line in f:
-            cities.append(line.strip())
-    logger.info("Loaded %d cities.", len(cities))
+    print("Loaded %d plugins", len(PLUGIN_REGISTRY))
 
     yield
     empty_cuda_cache()
@@ -128,11 +125,12 @@ async def home() -> str:
 
 @app.post('/chat/')
 async def chat(request: ChatRequest) -> ChatResponse:
-    logger.info("request:\n%s\n", request)
+    print("request:", request)
     start = time.perf_counter()
     try:
         context = {'location': _get_location(), 'time': _get_time()}
-
+        print("context:", context)
+        
         response = llm.utils.query(
             model,
             tokenizer,
@@ -143,6 +141,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
             temperature=request.temperature,
             top_p=request.top_p,
         )
+        print("response:",response)
     except Exception as e:
         response = str(e)
     duration = time.perf_counter() - start
@@ -154,7 +153,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
 async def stream_chat(
     request: ChatRequest,
 ) -> EventSourceResponse:
-    logger.info("request:\n%s\n", request)
+    print("request:\n%s\n", request)
 
     async def event_generator(
         request: ChatRequest, location: str, time: str, msg_uuid: str
@@ -181,4 +180,19 @@ async def stream_chat(
 
     return EventSourceResponse(
         event_generator(request, _get_location(), _get_time(), uuid.uuid4())
+    )
+
+
+
+if __name__ == '__main__':
+     # 启动Uvicorn服务器
+    host = "0.0.0.0"
+    port = 30016
+    reload = True
+    
+    uvicorn.run(
+        "plugin_service:app",
+        host=host,
+        port=port,
+        reload=reload,
     )

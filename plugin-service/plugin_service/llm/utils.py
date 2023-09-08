@@ -9,9 +9,12 @@ from transformers.modeling_utils import PreTrainedModel
 from transformers.tokenization_utils import PreTrainedTokenizer
 
 from plugin_service.llm import prompts
-from plugin_service.logging import llm_logger as logger
+# from plugin_service.logging import llm_logger as logger
 from plugin_service.plugins import PLUGIN_REGISTRY, normalize_plugin_name
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def extract_json(s: str) -> Optional[Dict[str, Any]]:
     end_idx = -1
@@ -93,12 +96,17 @@ def query(
 
     plugin_docs = []
     plugin_idx = 1
+    
+    # 获取插件文档
     for name in plugin_names:
         if name in PLUGIN_REGISTRY:
             plugin = PLUGIN_REGISTRY[name]
             plugin_docs.append(
                 f'{plugin_idx}. {plugin.name}\n{plugin.full_documentation}'
             )
+            
+            
+    # 构建指令和上下文信息
     full_doc = '\n'.join(plugin_docs)
     instruction = prompts.INSTRUCTION.format(tools_str=full_doc) + '\n'
     location = context.get('location', None)
@@ -106,6 +114,7 @@ def query(
     if location and time:
         instruction += f'用户地点：{location}，当前时间：{time}\n'
 
+    # 构建消息历史
     round_idx = 0
     flatten_history = []
     for query, reply in history:
@@ -128,12 +137,14 @@ def query(
             )
             return cur_history[-1][1]
         kwargs.update(**inputs)
-        # outputs = model.generate
+        #outputs = model.generate
+        
         for outputs in model.stream_generate(
             tokenizer=tokenizer, max_length=2048, **kwargs
         ):
             outputs = outputs.tolist()[0][len(inputs['input_ids'][0]) :]
         response = tokenizer.decode(outputs)
+        print("L149 response:{}".format(response))
         cur_history[-1] = (cur_history[-1][0], response)
         # yield cur_history
         message += response + '\n'
