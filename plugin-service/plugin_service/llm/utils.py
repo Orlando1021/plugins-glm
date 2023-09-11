@@ -21,12 +21,15 @@ def extract_json(s: str) -> Optional[Dict[str, Any]]:
     for idx in range(len(s)):
         if s[idx] == '}':
             try:
+                print("s[: idx + 1]:",s[: idx + 1])
                 obj = json.loads(s[: idx + 1])
+                print("obj1:",obj)
                 end_idx = idx
             except json.JSONDecodeError:
                 pass
     if end_idx >= 0:
         obj = json.loads(s[: end_idx + 1])
+        print("obj2:",obj)
         return obj
     return None
 
@@ -35,7 +38,9 @@ def parse_reply(reply: str) -> Dict[str, Any]:
     # normalizes reply
     reply = reply.replace('：', ':')
     lines = reply.splitlines()
+    print("lines:",lines)
     reply = '\n'.join(filter(len, map(lambda l: l.strip(), lines)))
+    print("reply:",reply)
 
     reply_json = {'action': None, 'thought': None}
     if '思考:' in reply:
@@ -47,6 +52,8 @@ def parse_reply(reply: str) -> Dict[str, Any]:
         if '提交回复:' in sub_reply:
             sub_reply = sub_reply[: sub_reply.find('提交回复:')]
         reply_json['thought'] = sub_reply.strip()
+        print("reply_json_1:",reply_json)
+
 
     if '使用工具:' in reply:
         sub_reply = reply[reply.find('使用工具:') + 5 :]
@@ -56,15 +63,21 @@ def parse_reply(reply: str) -> Dict[str, Any]:
             sub_reply = sub_reply[: sub_reply.find('使用工具:')]
         if '提交回复:' in sub_reply:
             sub_reply = sub_reply[: sub_reply.find('提交回复:')]
+            
+            
+        # 在这一步没有往下执行
         tool_json = extract_json(sub_reply)
-        if tool_json is not None:
+        print("tool_json:",tool_json)
+        if tool_json:
             reply_json['action'] = {
                 'type': 'tool',
                 'content': {
-                    '工具': tool_json['工具'],
-                    '参数': tool_json['参数'],
+                    '工具': tool_json['tool'],
+                    '参数': tool_json['parameters'],
                 },
             }
+        print("reply_json_2:",reply_json)
+
     elif '提交回复:' in reply:
         sub_reply = reply[reply.find('提交回复:') + 5 :]
         if '思考:' in sub_reply:
@@ -77,6 +90,9 @@ def parse_reply(reply: str) -> Dict[str, Any]:
             'type': 'response',
             'content': sub_reply.strip(),
         }
+        print("reply_json_3:",reply_json)
+
+    print("reply_json_final:",reply_json)
     return reply_json
 
 
