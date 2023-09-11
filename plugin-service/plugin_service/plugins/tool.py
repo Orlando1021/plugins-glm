@@ -40,7 +40,9 @@ class Tool(object):
             '函数': parameters['函数'],
             '函数参数': {'parameters': parameters['函数参数']},
         }
+        print('json_body:{}'.format(json_body))
         response = requests.post(self.url, json=json_body)
+        print("L40 tool:{}".format(response))
         if response.status_code != 200:
             return f"调用工具发生错误：{response.text}\n"
         return response.json()
@@ -58,10 +60,9 @@ class Tool(object):
             ]
         )
         example = random.choice(self.examples)
-        example_str = "[示例输入]\n{}".format(
-            _compose_tool_usage(self.name, example['input'])
-        )
-        return "工具描述：{}\n工具返回：{}\n[参数]\n{}\n{}".format(
+        example_str = "[示例输入]:{} ".format(_compose_tool_usage(self.name, example['input']))
+        
+        return "工具描述：{}\n工具返回：{}\n[参数]\n{}\n{}请返回json格式的结果".format(
             self.description,
             self.return_description,
             parameter_str,

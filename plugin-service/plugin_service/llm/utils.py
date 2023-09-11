@@ -13,7 +13,7 @@ from plugin_service.llm import prompts
 from plugin_service.plugins import PLUGIN_REGISTRY, normalize_plugin_name
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.info)
 logger = logging.getLogger(__name__)
 
 def extract_json(s: str) -> Optional[Dict[str, Any]]:
@@ -80,6 +80,7 @@ def parse_reply(reply: str) -> Dict[str, Any]:
     return reply_json
 
 
+
 def query(
     model: PreTrainedModel,
     tokenizer: PreTrainedTokenizer,
@@ -99,6 +100,7 @@ def query(
     
     # 获取插件文档
     for name in plugin_names:
+        print("PLUGIN_REGISTRY:{}\n".format(PLUGIN_REGISTRY))
         if name in PLUGIN_REGISTRY:
             plugin = PLUGIN_REGISTRY[name]
             plugin_docs.append(
@@ -108,6 +110,7 @@ def query(
             
     # 构建指令和上下文信息
     full_doc = '\n'.join(plugin_docs)
+    print("full_doc:{} from L113".format(full_doc))
     instruction = prompts.INSTRUCTION.format(tools_str=full_doc) + '\n'
     location = context.get('location', None)
     time = context.get('time', None)
@@ -144,17 +147,16 @@ def query(
         ):
             outputs = outputs.tolist()[0][len(inputs['input_ids'][0]) :]
         response = tokenizer.decode(outputs)
-        print("L149 response:{}".format(response))
+        
+        # 这里为什么只是思考？
+        print("L152 response=====================\n{} \n========================".format(response))
         cur_history[-1] = (cur_history[-1][0], response)
         # yield cur_history
         message += response + '\n'
-        # extracts action from reply
-        action = parse_reply(
-            response.replace('“', '"').replace('”', '"').replace('""', '"')
-        )
-        logger.info('message:\n%s', message)
-        logger.info('response:\n%s', response)
-        logger.info('action:\n%s', action)
+        # 根据respnse提取action
+        action = parse_reply(response)
+        # 这里就没往下执行了
+        print("L160 action:{}".format(action))
         if 'action' in action and 'type' in action['action']:
             if action['action']['type'] == 'response':
                 break
@@ -167,7 +169,9 @@ def query(
                 ]
                 ret = tool(action['action']['content']['参数'])
                 message += f"下面是工具返回的结果：\n{ret}\n"
+                print('L173 下面是工具返回的结果：:{}'.format(message))
                 cur_history.append((ret, None))
+                print("L175 cur_history:{}".format(cur_history))
         cnt += 1
         if cnt == 10:
             break
@@ -239,9 +243,7 @@ def stream_query(
         # yield cur_history
         message += response + '\n'
         # extracts action from reply
-        action = parse_reply(
-            response.replace('“', '"').replace('”', '"').replace('""', '"')
-        )
+        action = parse_reply(response)
         logger.info('message:\n%s', message)
         logger.info('response:\n%s', response)
         logger.info('action:\n%s', action)
