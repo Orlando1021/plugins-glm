@@ -45,13 +45,14 @@ curl -X 'POST' 'http://localhost:30016/chat/' \
 
 * lagent的测试
 ```
-# lagent是 InternLM实现的轻量级智能体项目，实现了rewoo/react智能体。可以将现有执行请求的pipeline修改成lagent样式
+# lagent是 InternLM实现的轻量级智能体项目，实现了rewoo/react智能体。
+# 可以将现有执行请求的pipeline修改成lagent样式
 python /share/lagent/lagent_test.py
 ```
 
 * Toolbench
-# Toolbench是刘知远团队实现的data generation和测评的pipeline，并提供了一版微调后的lamma-7b，已下载到开发机上
 ```
+# Toolbench是刘知远团队实现的data generation和测评的pipeline，并提供了一版微调后的lamma-7b，已下载到开发机上
 # lamma-7b的推理结果
 cd /share/ToolBench
 python ./toolbench/inference/qa_pipeline.py \
