@@ -43,7 +43,8 @@ curl -X 'POST' 'http://localhost:30016/chat/' \
 # 搭建的测试环境
 * 现有pipeline已在30016端口启动，随时根据聚合api的数据集微调6b/12b
 
-* lagent的测试
+
+* lagent
 ```
 # lagent是 InternLM实现的轻量级智能体项目，实现了rewoo/react智能体。
 # 可以将现有执行请求的pipeline修改成lagent样式
