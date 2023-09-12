@@ -17,15 +17,6 @@ v1数据集包含两个状态：
     提交回复：根据fuction calling的结果回答
 
 
-# sft脚本
-bash run.sh
-| glm-6b | glm-13b | 表头3 |
-|-------|-------|-------|
-| bash run.sh| 单元格2 | 单元格3 |
-| 单元格1 | 单元格2 | 单元格3 |
-
-已跑通6b，本周内13b跑通
-
 # 启动服务
 ```
 # 启动工具server，启动端口默认为9002
@@ -47,8 +38,43 @@ curl -X 'POST' 'http://localhost:30016/chat/' \
     "top_p": 0.0
 }'
 
-
 ```
+
+# 搭建的测试环境
+* 现有pipeline已在30016端口启动，随时根据聚合api的数据集微调6b/12b
+
+* lagent的测试
+```
+# lagent是 InternLM实现的轻量级智能体项目，实现了rewoo/react智能体。可以将现有执行请求的pipeline修改成lagent样式
+python /share/lagent/lagent_test.py
+```
+
+* Toolbench
+# Toolbench是刘知远团队实现的data generation和测评的pipeline，并提供了一版微调后的lamma-7b，已下载到开发机上
+```
+# lamma-7b的推理结果
+cd /share/ToolBench
+python ./toolbench/inference/qa_pipeline.py \
+    --tool_root_dir data/toolenv/tools/ \
+    --backbone_model toolllama \
+    --model_path /share/models/ToolLLaMA-2-7b \
+    --max_observation_length 1024 \
+    --observ_compress_method truncate \
+    --method DFS_woFilter_w2 \
+    --input_query_file data/instruction/inference_query_demo.json \
+    --output_answer_file toolllama_dfs_inference_result/0911 \
+    --toolbench_key $TOOLBENCH_KEY
+    
+```
+
+# sft脚本
+bash run.sh
+| glm-6b | glm-13b | 表头3 |
+|-------|-------|-------|
+| bash run.sh| 单元格2 | 单元格3 |
+| 单元格1 | 单元格2 | 单元格3 |
+
+已跑通6b，本周内13b跑通
 
 
 # 💻 todo：
